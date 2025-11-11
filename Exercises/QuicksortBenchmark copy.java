@@ -1,13 +1,115 @@
-import java.util.*;
+import java.util.Arrays;
 
-public class Blatt03 {
+/*
+ * Задание 3.1: Реализация QuickSort по варианту из лекции (слайд 36).
+ * В качестве опорного элемента (Pivot) выбирается средний элемент.
+ */
+public class QuickSortMitte {
 
-  // ------------------------- //
-    // Aufgabe 3.1 (QUICK SORT)
-    // Implementieren und benchmarken Sie QUICK SORT 
-    // in der in Vorlesung vorgestellten Variante.
-    // Konstruieren Sie dabei auch den Worst-Case geeignet.
-    // ------------------------- //
+    /*
+     * Публичный метод-обертка, который запускает сортировку.
+     */
+    public static void sort(int[] a) {
+        // Вызываем рекурсивный метод, начиная со всего массива
+        quicksort(a, 0, a.length - 1);
+    }
+
+    /*
+     * Рекурсивный вспомогательный метод QuickSort.
+     * @param a      Массив для сортировки
+     * @param left   Левая граница (индекс)
+     * @param right  Правая граница (индекс)
+     */
+    private static void quicksort(int[] a, int left, int right) {
+        
+        int i = left;  // Левый указатель
+        int j = right; // Правый указатель
+
+        // 1. Выбор опорного элемента (Pivot)
+        // Выбираем элемент из середины, как показано в лекции
+        int middle = (left + right) / 2;
+        int pivot = a[middle];
+
+        // 2. Этап разделения (Partition)
+        // Этот do-while цикл взят прямо со слайда 36
+        do {
+            // Двигаем левый указатель (i) вправо,
+            // пока не найдем элемент >= pivot
+            while (a[i] < pivot) {
+                i++;
+            }
+
+            // Двигаем правый указатель (j) влево,
+            // пока не найдем элемент <= pivot
+            while (a[j] > pivot) {
+                j--;
+            }
+
+            // Если указатели не "перекрестились" (i все еще левее j)
+            if (i <= j) {
+                // ...меняем элементы a[i] и a[j] местами
+                int tmp = a[i];
+                a[i] = a[j];
+                a[j] = tmp;
+
+                // Сдвигаем указатели, чтобы продолжить поиск
+                i++;
+                j--;
+            }
+        } while (i <= j); // (пока указатели не пересекутся)
+
+        // 3. Рекурсивные вызовы
+        // Рекурсивно сортируем левую часть (если она есть)
+        if (left < j) {
+            quicksort(a, left, j);
+        }
+        // Рекурсивно сортируем правую часть (если она есть)
+        if (i < right) {
+            quicksort(a, i, right);
+        }
+    }
+
+    // --- Тестирование и "Worst Case" ---
+    public static void main(String[] args) {
+        System.out.println("--- Задание 3.1: QuickSort (Middle Pivot) ---");
+
+        // 1. Обычный случай (неотсортированный массив)
+        int[] arrayNormal = {92, 37, 61, 59, 42, 79, 28, 14, 84};
+        System.out.println("До:    " + Arrays.toString(arrayNormal));
+        sort(arrayNormal);
+        System.out.println("После: " + Arrays.toString(arrayNormal));
+        System.out.println();
+
+        // 2. "Worst Case" (Худший случай)
+        // В задании просят "сконструировать" худший случай.
+        // Худший случай для QuickSort (O(n^2)) наступает, когда pivot
+        // всегда оказывается минимумом или максимумом.
+        // Для многих реализаций (например, с выбором 'a[left]' как pivot)
+        // худшим случаем является УЖЕ отсортированный массив.
+
+        // НО! Наша реализация (слайд 36) берет СРЕДНИЙ элемент.
+        // Для нее отсортированный массив - это ЛУЧШИЙ случай (Best Case)!
+        // (т.к. средний элемент будет медианой)
+
+        // Давайте просто покажем это на отсортированном массиве.
+        int[] arrayWorstCase = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        System.out.println("До (Sorted - 'Worst Case' для других): " + Arrays.toString(arrayWorstCase));
+        sort(arrayWorstCase);
+        System.out.println("После: " + Arrays.toString(arrayWorstCase));
+    }
+}
+
+
+import java.util.Arrays;
+import java.util.Random;
+
+/*
+ * Задание 3.2: QuickSort со случайным выбором Pivot.
+ * Это изменение помогает избежать худшего случая O(n^2).
+ */
+public class QuickSortRandom {
+
+    private static Random randomGenerator = new Random();
 
     public static void sort(int[] a) {
         quicksort(a, 0, a.length - 1);
@@ -16,15 +118,20 @@ public class Blatt03 {
     private static void quicksort(int[] a, int left, int right) {
         int i = left;
         int j = right;
-        int middle = (left + right) / 2;
-        int pivot = a[middle];
-        int tmp;
 
+        // 1. Выбор опорного элемента (Pivot)
+        // ВМЕСТО ВЫБОРА СРЕДНЕГО...
+        // ...выбираем случайный элемент в диапазоне [left, right]
+        int randomIndex = left + randomGenerator.nextInt(right - left + 1);
+        int pivot = a[randomIndex];
+
+        // 2. Этап разделения (Partition) - (Код идентичен 3.1)
         do {
             while (a[i] < pivot) i++;
             while (a[j] > pivot) j--;
+
             if (i <= j) {
-                tmp = a[i];
+                int tmp = a[i];
                 a[i] = a[j];
                 a[j] = tmp;
                 i++;
@@ -32,129 +139,198 @@ public class Blatt03 {
             }
         } while (i <= j);
 
+        // 3. Рекурсивные вызовы - (Код идентичен 3.1)
         if (left < j) quicksort(a, left, j);
         if (i < right) quicksort(a, i, right);
     }
 
-    // Минимальный тест с бенчмарком и худшим случаем
+    // --- Тестирование ---
     public static void main(String[] args) {
-        // Худший случай: уже отсортированный массив
-        int[] worst = {1,2,3,4,5,6,7,8,9,10};
+        System.out.println("--- Задание 3.2: QuickSort (Random Pivot) ---");
+        int[] arrayNormal = {92, 37, 61, 59, 42, 79, 28, 14, 84};
+        System.out.println("До:    " + Arrays.toString(arrayNormal));
+        sort(arrayNormal);
+        System.out.println("После: " + Arrays.toString(arrayNormal));
+    }
+}
 
-        long start = System.nanoTime();
-        sort(worst);
-        long end = System.nanoTime();
 
-        System.out.println("Time (Worst-Case): " + (end - start) + " ns");
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+/*
+ * Задание 3.3: Алгоритм "Медиана Медиан" (Select).
+ * Находит k-й по величине элемент в массиве за линейное время O(n).
+ * Реализация основана на псевдокоде (слайд 43).
+ */
+public class LinearTimeMedian {
+
+    /*
+     * Главная функция: находит k-й (по индексу) наименьший элемент в S.
+     * @param S Массив
+     * @param k Индекс искомого элемента (0...n-1)
+     * @return k-й наименьший элемент
+     */
+    public static int select(int[] S, int k) { 
+        int n = S.length;
+
+        // 1. Базовый случай (Base Case)
+        // Если массив маленький, просто сортируем его и берем k-й элемент.
+        // В лекции n < 50
+        if (n < 50) {
+            Arrays.sort(S);
+            return S[k];
+        }
+
+        // 2. Разделение на группы по 5 и поиск медиан
+        
+        int numMedians = (int) Math.ceil(n / 5.0);
+        int[] medians = new int[numMedians];
+
+        for (int i = 0; i < numMedians; i++) {
+            int groupStart = i * 5;
+            int groupEnd = Math.min(groupStart + 5, n);
+
+            // Находим медиану в каждой группе (простой сортировкой)
+            medians[i] = findMedianOfGroup(S, groupStart, groupEnd);
+        }
+
+        // 3. Рекурсивно ищем "Медиану Медиан" (m)
+        
+        int m = select(medians, (numMedians - 1) / 2);
+
+        // 4. Разделение S на 3 группы: A(<m), B(=m), C(>m)
+        // Используем List, как в подсказке к заданию
+        List<Integer> A = new ArrayList<>();
+        List<Integer> B = new ArrayList<>();
+        List<Integer> C = new ArrayList<>();
+
+        for (int x : S) {
+            if (x < m) A.add(x);
+            else if (x == m) B.add(x);
+            else C.add(x);
+        }
+
+        // 5. Рекурсивный поиск в одной из групп
+        if (k < A.size()) {
+            // Искомый элемент в группе A
+            return select(listToArray(A), k);
+        } else if (k < A.size() + B.size()) {
+            // Искомый элемент в группе B (это сама медиана m)
+            return m;
+        } else {
+            // Искомый элемент в группе C
+            // k обновляется: k - |A| - |B|
+            return select(listToArray(C), k - A.size() - B.size());
+        }
     }
 
-
-    // ----------------------------------- //
-    // Aufgabe 3.2 (Randomized QUICK SORT)
-    // Wahlen Sie nun anstelle des mittleren Elements ein zuf ̈alliges Element. L ̈asst sich im Laufzeitverhalten eine.
-    // Veranderung erkennen.//
-    // ----------------------------------- //
-    // Отличие: пивот выбирается случайно, а не по центру.
-    // Это уменьшает шанс "худшего случая" при почти отсортированных данных.
-    static void randomizedQuickSort(int[] a, int l, int r) {
-        if (l >= r) return;
-        int p = l + (int)(Math.random() * (r - l + 1)); // случайный индекс
-        int pivot = a[p];
-        a[p] = a[r];
-        a[r] = pivot; // переносим пивот в конец для удобства
-        int i = l;
-        for (int j = l; j < r; j++) {
-            if (a[j] < pivot) {
-                int t = a[i];
-                a[i] = a[j];
-                a[j] = t;
-                i++;
-            }
-        }
-        int t = a[i];
-        a[i] = a[r];
-        a[r] = t;
-        randomizedQuickSort(a, l, i - 1);
-        randomizedQuickSort(a, i + 1, r);
+    /*
+     * Вспомогательный метод: находит медиану в маленькой группе.
+     */
+    private static int findMedianOfGroup(int[] S, int start, int end) {
+        int[] group = Arrays.copyOfRange(S, start, end);
+        Arrays.sort(group);
+        return group[group.length / 2];
     }
 
-    // ------------------------------------------ //
-    // Aufgabe 3.4 (QUICK SORT mit Median-Berechnung)
-    // Implementieren Sie den in der Vorlesung vorgestellten Algorithmus zur Berechnung des Medians. Hinweis:
-    // Nutzen Sie zur Bildung der Mengen A, Bund Ceine List-Implementierung (z.B. LinkedList oder Array-
-    // List) in Java. Die rekursiven Aufrufe k ̈onnen dann mit Hilfe der toArray()-Funktionalit ̈at implementiert
-    // werden. Zeigt die Implementierung das zu erwartende Laufzeitverhalten?//
-    // ------------------------------------------ //
-    // Алгоритм "Median of Medians":
-    // 1. Делим массив на группы по 5 элементов.
-    // 2. Находим медиану каждой группы.
-    // 3. Из этих медиан рекурсивно ищем медиану.
-    // 4. Разделяем элементы на <, =, > этой медианы.
-    // 5. Вызываем себя для нужной части.
-    static int medianLinear(int[] a, int k) {
-        if (a.length <= 5) { // базовый случай — маленький массив
-            Arrays.sort(a);
-            return a[k];
-        }
-        List<Integer> meds = new ArrayList<>();
-        for (int i = 0; i < a.length; i += 5) {
-            int[] g = Arrays.copyOfRange(a, i, Math.min(i + 5, a.length));
-            Arrays.sort(g);
-            meds.add(g[g.length / 2]);
-        }
-        int[] mArr = meds.stream().mapToInt(Integer::intValue).toArray();
-        int med = medianLinear(mArr, mArr.length / 2); // медиана медиан
-        List<Integer> A = new ArrayList<>(), B = new ArrayList<>(), C = new ArrayList<>();
-        for (int x : a) {
-            if (x < med) A.add(x);
-            else if (x > med) C.add(x);
-            else B.add(x);
-        }
-        if (k < A.size()) return medianLinear(A.stream().mapToInt(Integer::intValue).toArray(), k);
-        if (k < A.size() + B.size()) return med;
-        return medianLinear(C.stream().mapToInt(Integer::intValue).toArray(), k - A.size() - B.size());
+    /*
+     * Вспомогательный метод: конвертирует List<Integer> в int[].
+     * (Как в подсказке к заданию)
+     */
+    private static int[] listToArray(List<Integer> list) {
+        int[] arr = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) arr[i] = list.get(i);
+        return arr;
     }
 
-    // ------------------------------------------------- //
-    // Задание 3.4 — Quick Sort с использованием медианы //
-    // ------------------------------------------------- //
-    // Здесь перед сортировкой находим медиану (из предыдущего метода)
-    // и используем её как пивот. Это делает разбиение более сбалансированным.
-    static void quickSortWithMedian(int[] a, int l, int r) {
-        if (l >= r) return;
-        int[] sub = Arrays.copyOfRange(a, l, r + 1);
-        int med = medianLinear(sub, sub.length / 2);
-        int i = l, j = r;
-        while (i <= j) {
-            while (a[i] < med) i++;
-            while (a[j] > med) j--;
+    // --- Тестирование ---
+    public static void main(String[] args) {
+        System.out.println("--- Задание 3.3: Linear Time Median (Select) ---");
+        // Массив побольше, чтобы n > 50
+        int[] array = {
+              10, 5, 7, 6, 8, 2, 9, 3, 4, 1,
+              20, 25, 27, 26, 28, 22, 29, 23, 24, 21,
+              30, 35, 37, 36, 38, 32, 39, 33, 34, 31,
+              40, 45, 47, 46, 48, 42, 49, 43, 44, 41,
+              50, 55, 57, 56, 58, 52, 59, 53, 54, 51
+        };
+        System.out.println("Массив (50 элементов): " + Arrays.toString(array));
+
+        // Медиана - это k = (n-1)/2 = 24-й элемент (индекс 24)
+        int medianK = (array.length - 1) / 2;
+        int medianValue = select(array, medianK);
+        System.out.println("Ищем k=" + medianK + " (медиану).");
+        System.out.println("Найденная медиана: " + medianValue); // Должно быть 25.5 -> 25 или 26
+
+        // Давайте отсортируем для проверки
+        Arrays.sort(array);
+        System.out.println("Проверка (массив отсорт.): " + Arrays.toString(array));
+        System.out.println("Медиана в отсорт. массиве: " + array[medianK]);
+    }
+}
+
+
+import java.util.Arrays;
+
+/*
+ * Задание 3.4: QuickSort с выбором Pivot'а через "Медиану Медиан".
+ * Это гарантирует время O(n log n),
+ * т.к. pivot всегда является идеальным.
+ */
+public class QuickSortMedian {
+
+    public static void sort(int[] a) {
+        quicksort(a, 0, a.length - 1);
+    }
+
+    private static void quicksort(int[] a, int left, int right) {
+        // Добавляем базовый случай, т.к. нам нужен n > 0 для 'select'
+        if (left >= right) {
+            return;
+        }
+
+        int i = left;
+        int j = right;
+        int n = right - left + 1; // Размер текущего подмассива
+
+        // 1. Выбор опорного элемента (Pivot)
+        // Создаем временный подмассив, т.к. наш 'select' работает с целым массивом
+        int[] subarray = new int[n];
+        System.arraycopy(a, left, subarray, 0, n);
+
+        // Находим индекс медианы k для текущего подмассива
+        int medianK = (n - 1) / 2;
+
+        // Вычисляем настоящую медиану, используя наш алгоритм из 3.3
+        int pivot = LinearTimeMedian.select(subarray, medianK);
+
+        // 2. Этап разделения (Partition) - (Код идентичен 3.1)
+        do {
+            while (a[i] < pivot) i++;
+            while (a[j] > pivot) j--;
+
             if (i <= j) {
-                int t = a[i];
+                int tmp = a[i];
                 a[i] = a[j];
-                a[j] = t;
+                a[j] = tmp;
                 i++;
                 j--;
             }
-        }
-        if (l < j) quickSortWithMedian(a, l, j);
-        if (i < r) quickSortWithMedian(a, i, r);
+        } while (i <= j);
+
+        // 3. Рекурсивные вызовы - (Код идентичен 3.1)
+        if (left < j) quicksort(a, left, j);
+        if (i < right) quicksort(a, i, right);
     }
 
-    // ---------------- //
-    // Тест и сравнение //
-    // ---------------- //
-    // Сравнивает все четыре варианта: обычный, случайный, с медианой и поиск медианы отдельно.
+    // --- Тестирование ---
     public static void main(String[] args) {
-        int[] a = {5,1,9,3,7,2,8,4,6};
-        int[] b = a.clone(), c = a.clone(), d = a.clone();
-
-        quickSort(a,0,a.length-1);
-        randomizedQuickSort(b,0,b.length-1);
-        quickSortWithMedian(d,0,d.length-1);
-
-        System.out.println("QuickSort: " + Arrays.toString(a));
-        System.out.println("Randomized: " + Arrays.toString(b));
-        System.out.println("QuickSort + Median: " + Arrays.toString(d));
-        System.out.println("Linear Median of c: " + medianLinear(c, c.length/2));
+        System.out.println("--- Задание 3.4: QuickSort (Median Pivot) ---");
+        int[] arrayNormal = {92, 37, 61, 59, 42, 79, 28, 14, 84};
+        System.out.println("До:    " + Arrays.toString(arrayNormal));
+        sort(arrayNormal);
+        System.out.println("После: " + Arrays.toString(arrayNormal));
     }
 }
